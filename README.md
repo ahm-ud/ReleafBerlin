@@ -16,3 +16,5 @@ This template has a fully-automated dev setup for [Gitpod](https://docs.gitlab.c
 
 If you open this project in Gitpod, you'll get all Node dependencies pre-installed.
 "Ahmed Al-Odaini + Bashar Al Abdalla" 
+
+# Update made by Ahmed in the GitLab web interface
