@@ -15,4 +15,20 @@ If Auto DevOps is not already enabled for this project, you can [turn it on](htt
 This template has a fully-automated dev setup for [Gitpod](https://docs.gitlab.com/ee/integration/gitpod.html).
 
 If you open this project in Gitpod, you'll get all Node dependencies pre-installed.
- 
+
+
+
+#### 👥 Team
+
+* **Ahmed Al-Odaini**, MatrNr: 592811
+
+
+
+
+
+##### 🧩 Project Info
+
+* **App-Name:** ReLeafBerlin
+* **Kurzbeschreibung:**  
+  ReLeafBerlin ist eine einfache Node.js-Express-Webanwendung, die im Rahmen des Moduls *Web Application Development* entwickelt wird.  
+  Ziel ist es, später eine kleine Single-Page-Application zu erstellen, die nachhaltige Orte in Berlin darstellt.
