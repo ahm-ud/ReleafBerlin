@@ -18,3 +18,4 @@ If you open this project in Gitpod, you'll get all Node dependencies pre-install
 "Ahmed Al-Odaini + Bashar Al Abdalla" 
 
 # Update made by Ahmed in the GitLab web interface
+# Update made by Bashar in the GitLab web interface
