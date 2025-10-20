@@ -22,6 +22,7 @@ If you open this project in Gitpod, you'll get all Node dependencies pre-install
 
 * **Ahmed Al-Odaini**, MatrNr: 592811
 * **Bashar Al Abdalla**, MatrNr: 592500
+* kjc 
 
 
 
