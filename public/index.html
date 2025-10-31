@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ReLeafBerlin</title>
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <h1>ReLeafBerlin</h1>
+
+  <section class="card">
+    <h2>Login</h2>
+    <form class="form">
+  <label>
+    Benutzername*:
+    <input type="text" name="username" placeholder="Gib deinen Benutzernamen ein" required>
+  </label>
+
+  <label>
+    Passwort*:
+    <input type="password" name="password" placeholder="********" required>
+  </label>
+
+  <button type="submit">Login</button>
+</form>
+
+
+
+
+</section>
+<section class="card">
+  <h2>Standort hinzufügen</h2>
+
+  <form class="form">
+    <label>
+      Titel*:
+      <input type="text" name="title" placeholder="Titel des Standorts" required>
+    </label>
+
+    <label>
+      Beschreibung:
+      <textarea name="description" rows="3" placeholder="Kurze Beschreibung..."></textarea>
+    </label>
+
+    <label>
+      Straße & Hausnummer*:
+      <input type="text" name="street" placeholder="z. B. Sonnenallee 231" required>
+    </label>
+
+    <label>
+      PLZ + Stadt*:
+      <input type="text" name="plz" placeholder="z. B. 12059 Berlin" required>
+    </label>
+
+    <label>
+      Kategorie*:
+      <select name="category" required>
+        <option value="">Bitte auswählen</option>
+        <option>Fahrrad (Wege, Abschließmöglichkeit)</option>
+        <option>ÖPNV</option>
+        <option>Fußgänger:innen</option>
+        <option>Straßenverkehr (Baustellen, Verkehrsdichte)</option>
+        <option>Luft</option>
+        <option>Industrieanlagen</option>
+      </select>
+    </label>
+
+    <label>
+      Bild hochladen:
+      <input type="file" accept="image/*">
+    </label>
+
+    <div class="form-buttons">
+      <button type="submit">Speichern</button>
+      <button type="reset">Abbrechen</button>
+    </div>
+  </form>
+</section>
+
+</body>
+</html>
