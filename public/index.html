@@ -3,74 +3,70 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>ReLeafBerlin – Stacked Screens</title>
+  <title>ReLeafBerlin – SPA</title>
+
   <link rel="stylesheet" href="style.css" />
+  <script src="script.js" defer></script>
 </head>
 <body>
 
   <!-- =========================================================
        GLOBALER HEADER
-       - Logo links
-       - Grauer Streifen mit Navigation (Anker auf die 4 Screens)
        ========================================================= -->
   <header class="re-header" aria-label="Header">
     <div class="re-head-inner">
-      <a class="re-brand" href="#screen-main" aria-label="ReLeafBerlin Home">
+      <a class="re-brand" href="#" aria-label="ReLeafBerlin Home">
         <img class="re-logo" src="images/logo-releaf.png" alt="ReLeafBerlin logo" />
         <span class="sr-only">ReLeafBerlin</span>
       </a>
     </div>
     <div class="re-hero">
       <div class="re-hero-inner">
-        <nav class="re-jump" aria-label="Navigation">
-          <a href="#screen-login">Login</a>
-          <a href="#screen-main" aria-current="page">Main</a>
-          <a href="#screen-add">Add</a>
-          <a href="#screen-details">Details</a>
-        </nav>
+        <!-- Navigation entfernt -->
       </div>
     </div>
   </header>
 
   <!-- =========================================================
-       HAUPTINHALT: vier Screens untereinander (statischer Prototyp)
+       MAIN CONTENT – SPA SCREENS
        ========================================================= -->
   <main class="re-content">
 
-    <!-- ======================= SCREEN 1: LOGIN ======================= -->
-    <!-- Zweck: statische Login-Maske (keine Funktionalität) -->
-    <section id="screen-login" class="re-box" aria-labelledby="loginTitle">
-      <div class="re-box-head"><h3 id="loginTitle">LOGIN</h3></div>
+    <!-- ======================= LOGIN SCREEN ======================= -->
+    <section id="screen-login" class="re-box">
+      <div class="re-box-head"><h3>LOGIN</h3></div>
       <div class="re-box-body">
-        <form class="re-form">
+        <form class="re-form" id="loginForm">
           <label class="re-field">
             <span>Username <span class="req">*</span></span>
-            <input type="text" required placeholder="admina" />
+            <input type="text" required />
+            <div class="re-hint">Bitte Username eingeben.</div>
           </label>
+
           <label class="re-field">
             <span>Password <span class="req">*</span></span>
-            <input type="password" required placeholder="••••••••" />
+            <input type="password" required />
+            <div class="re-hint">Bitte Passwort eingeben.</div>
           </label>
+
           <div class="re-actions">
-            <button type="button" class="btn btn-primary">Login</button>
+            <button 
+              type="submit"
+              class="btn btn-primary"
+              onclick="this.form.classList.add('validated');">
+              Login
+            </button>
           </div>
         </form>
       </div>
     </section>
 
-    <!-- ======================= SCREEN 2: MAIN ======================== -->
-    <!-- Enthält: Box-Topbar (Logo + Logout), Begrüßung, Locations-Liste -->
-    <section id="screen-main" class="re-box" aria-labelledby="mainTitle">
-      <!-- Box-Topbar (Logo erneut – absichtliches UI-Pattern im Screen) -->
+    <!-- ======================= MAIN SCREEN ======================== -->
+    <section id="screen-main" class="re-box hidden">
       <div class="re-box-topbar">
-        <a class="re-brand" href="#screen-main" aria-label="ReLeafBerlin Home">
-          <img class="re-logo" src="images/logo-releaf.png" alt="ReLeafBerlin logo" />
-          <span class="sr-only">ReLeafBerlin</span>
-        </a>
-        <button class="re-logout" type="button" aria-label="Logout">Logout</button>
+        <button class="re-logout" type="button">Logout</button>
       </div>
 
-      <!-- Begrüßungsband im Box-Stil (zentriert) -->
       <div class="re-greeting">
         <h2 class="re-hero-hi in-box">
           Hi <strong class="rb-user">Username</strong>! Welcome to
@@ -79,16 +75,15 @@
         <p class="re-hero-tagline in-box">– Together we make the world better –</p>
       </div>
 
-      <!-- Überschrift der Liste -->
       <div class="re-box-head">
-        <h3 id="mainTitle">LOCATIONS</h3>
+        <h3>LOCATIONS</h3>
       </div>
 
-      <!-- Kartenliste der Orte (statisch) -->
       <div class="re-box-body">
+
         <article class="place">
           <div class="place-media">
-            <img src="images/bvg-friedrichsfelde.jpg" alt="BVG U-Bahn workshop Friedrichsfelde" />
+            <img src="images/bvg-friedrichsfelde.jpg" />
           </div>
           <div class="place-content">
             <h4 class="place-title">BVG U-Bahn Betriebswerkstatt Friedrichsfelde</h4>
@@ -99,7 +94,7 @@
 
         <article class="place">
           <div class="place-media">
-            <img src="images/kein_bild_vorhanden.png" alt="Upstallweg placeholder" />
+            <img src="images/kein_bild_vorhanden.png" />
           </div>
           <div class="place-content">
             <h4 class="place-title">Upstallweg</h4>
@@ -110,142 +105,89 @@
 
         <article class="place">
           <div class="place-media">
-            <img src="images/kein_bild_vorhanden.png" alt="Baustelle Lindenstraße (Köpenick) placeholder" />
+            <img src="images/kein_bild_vorhanden.png" />
           </div>
           <div class="place-content">
             <h4 class="place-title">Baustelle Lindenstraße (Köpenick)</h4>
             <p class="place-address">Lindenstraße, 12555 Berlin</p>
-            <p class="place-note">Straßenverkehr (Baustellen) • Gleisbauarbeiten, Fahrbahn auf jeweils einen Fahrstreifen verengt und verschwenkt, im Anschluss folgen weitere Arbeiten</p>
+            <p class="place-note">Straßenverkehr • Baustellen • Gleisbauarbeiten</p>
           </div>
         </article>
+
       </div>
 
-      <!-- Listen-Footer: Add + Edit/Delete links (links ausgerichtet) -->
       <div class="re-list-foot">
-        <a class="re-add" href="#screen-add"><span aria-hidden="true">+</span> Add Location</a>
-        <a class="re-editdel" href="#screen-details">Edit/Delete</a>
+        <button class="re-add btn btn-primary" id="btnAdd">+ Add Location</button>
       </div>
-
-      <!-- =========================================================
-            GLOBALER FOOTER (vollbreit, grün)
-            ========================================================= -->
-      <footer class="page-footer" role="contentinfo">
-        <p><a href="#">Imprint</a> | <a href="#">Privacy Policy</a></p>
-      </footer>
     </section>
 
-    <!-- ======================= SCREEN 3: ADD ========================= -->
-    <!-- Formularfelder gemäß Anforderung (Pflichtfelder mit *) -->
-    <section id="screen-add" class="re-box" aria-labelledby="addTitle">
-      <div class="re-box-head"><h3 id="addTitle">ADD LOCATION</h3></div>
+    <!-- ======================= ADD SCREEN ========================= -->
+    <section id="screen-add" class="re-box hidden">
+      <div class="re-box-head"><h3>ADD LOCATION</h3></div>
       <div class="re-box-body">
-        <form class="re-form">
+        <form class="re-form" id="addForm">
+
           <label class="re-field">
             <span>Title <span class="req">*</span></span>
-            <input type="text" required placeholder="e.g. Bike station Köpenick" />
+            <input type="text" required />
+            <div class="re-hint">Bitte Title eingeben.</div>
           </label>
+
           <label class="re-field">
-            <span>Location description</span>
-            <textarea rows="4" placeholder="Short description (max. 300 chars)"></textarea>
+            <span>Street &amp; No. <span class="req">*</span></span>
+            <input type="text" required />
+            <div class="re-hint">Bitte Straße eingeben.</div>
           </label>
-          <div class="re-grid-2">
-            <label class="re-field">
-              <span>Street &amp; No. <span class="req">*</span></span>
-              <input type="text" required placeholder="xxxx street 1" />
-            </label>
-            <label class="re-field">
-              <span>ZIP + City <span class="req">*</span></span>
-              <input type="text" required placeholder="12345 Berlin" />
-            </label>
-          </div>
+
+          <label class="re-field">
+            <span>ZIP + City <span class="req">*</span></span>
+            <input type="text" required />
+            <div class="re-hint">Bitte PLZ und Stadt eingeben.</div>
+          </label>
+
           <label class="re-field">
             <span>Category <span class="req">*</span></span>
             <select required>
-              <option value="">Please choose …</option>
-              <option>Fahrrad (Wege, Abschliessmöglichkeit)</option>
-              <option>ÖPVN</option>
-              <option>Fußgänger:innen</option>
-              <option>Straßenverkehr (Baustellen, Verkehrsdichte)</option>
+              <option value="">Choose…</option>
+              <option>Fahrrad</option>
+              <option>ÖPNV</option>
               <option>Luft</option>
-              <option>Industrieanlagen</option>
             </select>
+            <div class="re-hint">Bitte eine Kategorie wählen.</div>
           </label>
-          <label class="re-field">
-            <span>Upload image</span>
-            <input type="file" accept="image/*" />
-          </label>
+
           <div class="re-actions">
-            <button type="button" class="btn btn-primary">Save</button>
-            <a href="#screen-main" class="btn btn-ghost">Cancel</a>
+            <button 
+              type="submit"
+              class="btn btn-primary"
+              onclick="this.form.classList.add('validated');">
+              Save
+            </button>
+
+            <button type="button" class="btn btn-ghost" id="cancelAdd">Cancel</button>
           </div>
         </form>
       </div>
     </section>
 
-    <!-- ======================= SCREEN 4: DETAILS ===================== -->
-    <!-- Wie Add, aber mit vorausgefüllten Werten + Koordinaten readonly -->
-    <section id="screen-details" class="re-box" aria-labelledby="detTitle">
-      <div class="re-box-head"><h3 id="detTitle">EDIT / DELETE LOCATION</h3></div>
+    <!-- ======================= DETAILS SCREEN ===================== -->
+    <section id="screen-details" class="re-box hidden">
+      <div class="re-box-head"><h3>LOCATION DETAILS</h3></div>
       <div class="re-box-body">
-        <div class="re-details-grid">
-          <figure class="re-details-media">
-            <img src="images/bvg-friedrichsfelde.jpg" alt="BVG U-Bahn Betriebswerkstatt Friedrichsfelde" />
-            <figcaption>BVG U-Bahn Betriebswerkstatt Friedrichsfelde</figcaption>
-          </figure>
-          <form class="re-form">
-            <label class="re-field">
-              <span>Title <span class="req">*</span></span>
-              <input type="text" value="BVG U-Bahn Betriebswerkstatt Friedrichsfelde" required />
-            </label>
-            <label class="re-field">
-              <span>Location description</span>
-              <textarea rows="4">Energieeffizienz, Lärmschutz, Emissionen.</textarea>
-            </label>
-            <div class="re-grid-2">
-              <label class="re-field">
-                <span>Street &amp; No. <span class="req">*</span></span>
-                <input type="text" value="Zachertstraße 84" required />
-              </label>
-              <label class="re-field">
-                <span>ZIP + City <span class="req">*</span></span>
-                <input type="text" value="10315 Berlin" required />
-              </label>
-            </div>
-            <label class="re-field">
-              <span>Category <span class="req">*</span></span>
-              <select required>
-                <option>Fahrrad (Wege, Abschliessmöglichkeit)</option>
-                <option selected>ÖPVN</option>
-                <option>Fußgänger:innen</option>
-                <option>Straßenverkehr (Baustellen, Verkehrsdichte)</option>
-                <option>Luft</option>
-                <option>Industrieanlagen</option>
-              </select>
-            </label>
-            <div class="re-grid-2">
-              <label class="re-field">
-                <span>Latitude</span>
-                <input type="text" value="52.5090" readonly aria-readonly="true" />
-              </label>
-              <label class="re-field">
-                <span>Longitude</span>
-                <input type="text" value="13.5110" readonly aria-readonly="true" />
-              </label>
-            </div>
-            <label class="re-field">
-              <span>Replace image</span>
-              <input type="file" accept="image/*" />
-            </label>
-            <div class="re-actions">
-              <button type="button" class="btn btn-primary">Update</button>
-              <button type="button" class="btn btn-danger">Delete</button>
-              <a href="#screen-main" class="btn btn-ghost">Cancel</a>
-            </div>
-          </form>
-        </div>
+        <p>Details werden später per JS geladen…</p>
+
+        <button class="btn btn-ghost" id="closeDetails">Close</button>
       </div>
     </section>
 
   </main>
+
+    <!-- =========================================================
+                      GLOBALER FOOTER 
+       ========================================================= -->
+  <footer class="page-footer" role="contentinfo">
+    <p><a href="#">Imprint</a> | <a href="#">Privacy Policy</a></p>
+  </footer>
+
 </body>
 </html>
