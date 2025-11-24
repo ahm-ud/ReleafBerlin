@@ -79,11 +79,11 @@
         <h3>LOCATIONS</h3>
       </div>
 
-      <div class="re-box-body">
+      <div class="re-box-body" id="locationsList">
 
-        <article class="place">
-          <div class="place-media">
-            <img src="images/bvg-friedrichsfelde.jpg" />
+        <article class="place" data-id="0">
+         <div class="place-media">
+            <img src="images/bvg-friedrichsfelde.jpg" alt="BVG U-Bahn Betriebswerkstatt Friedrichsfelde" />
           </div>
           <div class="place-content">
             <h4 class="place-title">BVG U-Bahn Betriebswerkstatt Friedrichsfelde</h4>
@@ -92,9 +92,9 @@
           </div>
         </article>
 
-        <article class="place">
+        <article class="place" data-id="1">
           <div class="place-media">
-            <img src="images/kein_bild_vorhanden.png" />
+            <img src="images/kein_bild_vorhanden.png" alt="Upstallweg, Fahrradweg" />
           </div>
           <div class="place-content">
             <h4 class="place-title">Upstallweg</h4>
@@ -103,9 +103,9 @@
           </div>
         </article>
 
-        <article class="place">
+        <article class="place" data-id="2">
           <div class="place-media">
-            <img src="images/kein_bild_vorhanden.png" />
+            <img src="images/kein_bild_vorhanden.png" alt="Baustelle Lindenstraße, Köpenick" />
           </div>
           <div class="place-content">
             <h4 class="place-title">Baustelle Lindenstraße (Köpenick)</h4>
@@ -129,29 +129,30 @@
 
           <label class="re-field">
             <span>Title <span class="req">*</span></span>
-            <input type="text" required />
+            <input type="text" id="addTitle" required />
             <div class="re-hint">Bitte Title eingeben.</div>
           </label>
 
           <label class="re-field">
             <span>Street &amp; No. <span class="req">*</span></span>
-            <input type="text" required />
+            <input type="text" id="addStreet" required />
             <div class="re-hint">Bitte Straße eingeben.</div>
           </label>
 
           <label class="re-field">
             <span>ZIP + City <span class="req">*</span></span>
-            <input type="text" required />
+            <input type="text" id="addZipCity" required />
             <div class="re-hint">Bitte PLZ und Stadt eingeben.</div>
           </label>
 
           <label class="re-field">
             <span>Category <span class="req">*</span></span>
-            <select required>
+            <select id="addCategory" required>
               <option value="">Choose…</option>
-              <option>Fahrrad</option>
-              <option>ÖPNV</option>
-              <option>Luft</option>
+              <option value="Fahrrad">Fahrrad</option>
+              <option value="ÖPNV">ÖPNV</option>
+              <option value="Luft">Luft</option>
+              <option value="Straßenverkehr">Straßenverkehr</option>
             </select>
             <div class="re-hint">Bitte eine Kategorie wählen.</div>
           </label>
@@ -172,13 +173,54 @@
 
     <!-- ======================= DETAILS SCREEN ===================== -->
     <section id="screen-details" class="re-box hidden">
-      <div class="re-box-head"><h3>LOCATION DETAILS</h3></div>
-      <div class="re-box-body">
-        <p>Details werden später per JS geladen…</p>
+  <div class="re-box-head"><h3>LOCATION DETAILS</h3></div>
 
-        <button class="btn btn-ghost" id="closeDetails">Close</button>
-      </div>
-    </section>
+  <div class="re-box-body">
+    <div class="re-details-grid">
+      <!-- Bild / Media -->
+      <figure class="re-details-media">
+        <img id="detailImage" src="" alt="" />
+        <figcaption id="detailImageCaption"></figcaption>
+      </figure>
+
+      <!-- Formular -->
+      <form class="re-form" id="detailsForm">
+        <label class="re-field">
+          <span>Title <span class="req">*</span></span>
+          <input type="text" id="detailTitle" required />
+        </label>
+
+        <label class="re-field">
+          <span>Street &amp; No. <span class="req">*</span></span>
+          <input type="text" id="detailStreet" required />
+        </label>
+
+        <label class="re-field">
+          <span>ZIP + City <span class="req">*</span></span>
+          <input type="text" id="detailZipCity" required />
+        </label>
+
+        <label class="re-field">
+          <span>Category <span class="req">*</span></span>
+          <select id="detailCategory" required>
+            <option value="">Choose…</option>
+            <option value="Fahrrad">Fahrrad</option>
+            <option value="ÖPNV">ÖPNV</option>
+            <option value="Luft">Luft</option>
+            <option value="Straßenverkehr">Straßenverkehr</option>
+          </select>
+        </label>
+      </form>
+    </div>
+
+    <!-- Buttons unten -->
+    <div class="re-actions" style="margin-top:16px; display:flex; gap:10px;">
+      <button type="button" class="btn btn-primary" id="btnUpdate">Update</button>
+      <button type="button" class="btn btn-danger" id="btnDelete">Delete</button>
+      <button type="button" class="btn btn-ghost" id="closeDetails">Cancel</button>
+    </div>
+  </div>
+</section>
 
   </main>
 
