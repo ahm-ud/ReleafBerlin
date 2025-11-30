@@ -239,6 +239,19 @@ img { max-width:100%; display:block; }
   font-style:italic;
 }
 
+/* ===== Make only the location title clickable ===== */
+.place-title {
+  cursor: pointer;
+  text-decoration: none;
+  transition: color .15s ease;
+}
+
+.place-title:hover {
+  text-decoration: underline;
+  color: var(--brand-dark);
+}
+
+
 /* ===== LIST FOOTER ===== */
 .re-list-foot {
   padding:12px var(--pad-x) 14px;

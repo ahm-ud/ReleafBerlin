@@ -88,7 +88,7 @@
           <div class="place-content">
             <h4 class="place-title">BVG U-Bahn Betriebswerkstatt Friedrichsfelde</h4>
             <p class="place-address">Zachertstraße 84, 10315 Berlin</p>
-            <p class="place-note">ÖPNV • Werkstatt der Berliner Verkehrsbetriebe</p>
+            <p class="place-note">Public Transport • Werkstatt der Berliner Verkehrsbetriebe</p>
           </div>
         </article>
 
@@ -99,7 +99,7 @@
           <div class="place-content">
             <h4 class="place-title">Upstallweg</h4>
             <p class="place-address">Upstallweg, 10319 Berlin</p>
-            <p class="place-note">Fahrradweg</p>
+            <p class="place-note">Bike Path (paths, parking)</p>
           </div>
         </article>
 
@@ -110,7 +110,7 @@
           <div class="place-content">
             <h4 class="place-title">Baustelle Lindenstraße (Köpenick)</h4>
             <p class="place-address">Lindenstraße, 12555 Berlin</p>
-            <p class="place-note">Straßenverkehr • Baustellen • Gleisbauarbeiten</p>
+            <p class="place-note">Road Traffic (construction sites, traffic density) Gleisbauarbeiten</p>
           </div>
         </article>
 
@@ -121,108 +121,159 @@
       </div>
     </section>
 
-    <!-- ======================= ADD SCREEN ========================= -->
-    <section id="screen-add" class="re-box hidden">
-      <div class="re-box-head"><h3>ADD LOCATION</h3></div>
-      <div class="re-box-body">
-        <form class="re-form" id="addForm">
+<!-- ======================= ADD SCREEN ========================= -->
+  <section id="screen-add" class="re-box hidden">
+    <div class="re-box-head"><h3>ADD LOCATION</h3></div>
+    <div class="re-box-body">
+      <form class="re-form" id="addForm">
 
-          <label class="re-field">
-            <span>Title <span class="req">*</span></span>
-            <input type="text" id="addTitle" required />
-            <div class="re-hint">Bitte Title eingeben.</div>
-          </label>
-
-          <label class="re-field">
-            <span>Street &amp; No. <span class="req">*</span></span>
-            <input type="text" id="addStreet" required />
-            <div class="re-hint">Bitte Straße eingeben.</div>
-          </label>
-
-          <label class="re-field">
-            <span>ZIP + City <span class="req">*</span></span>
-            <input type="text" id="addZipCity" required />
-            <div class="re-hint">Bitte PLZ und Stadt eingeben.</div>
-          </label>
-
-          <label class="re-field">
-            <span>Category <span class="req">*</span></span>
-            <select id="addCategory" required>
-              <option value="">Choose…</option>
-              <option value="Fahrrad">Fahrrad</option>
-              <option value="ÖPNV">ÖPNV</option>
-              <option value="Luft">Luft</option>
-              <option value="Straßenverkehr">Straßenverkehr</option>
-            </select>
-            <div class="re-hint">Bitte eine Kategorie wählen.</div>
-          </label>
-
-          <div class="re-actions">
-            <button 
-              type="submit"
-              class="btn btn-primary"
-              onclick="this.form.classList.add('validated');">
-              Save
-            </button>
-
-            <button type="button" class="btn btn-ghost" id="cancelAdd">Cancel</button>
-          </div>
-        </form>
-      </div>
-    </section>
-
-    <!-- ======================= DETAILS SCREEN ===================== -->
-    <section id="screen-details" class="re-box hidden">
-  <div class="re-box-head"><h3>LOCATION DETAILS</h3></div>
-
-  <div class="re-box-body">
-    <div class="re-details-grid">
-      <!-- Bild / Media -->
-      <figure class="re-details-media">
-        <img id="detailImage" src="" alt="" />
-        <figcaption id="detailImageCaption"></figcaption>
-      </figure>
-
-      <!-- Formular -->
-      <form class="re-form" id="detailsForm">
+        <!-- Title -->
         <label class="re-field">
           <span>Title <span class="req">*</span></span>
-          <input type="text" id="detailTitle" required />
+          <input type="text" id="addTitle" required />
+          <div class="re-hint">Please enter a title.</div>
         </label>
 
+        <!-- Description -->
         <label class="re-field">
-          <span>Street &amp; No. <span class="req">*</span></span>
-          <input type="text" id="detailStreet" required />
+          <span>Description</span>
+          <textarea id="addDescription" rows="4" placeholder="Short description"></textarea>
         </label>
 
+        <!-- Street -->
+        <label class="re-field">
+          <span>Street & No. <span class="req">*</span></span>
+          <input type="text" id="addStreet" required />
+          <div class="re-hint">Please enter a street.</div>
+        </label>
+
+        <!-- ZIP + City -->
         <label class="re-field">
           <span>ZIP + City <span class="req">*</span></span>
-          <input type="text" id="detailZipCity" required />
+          <input type="text" id="addZipCity" required />
+          <div class="re-hint">Please enter ZIP + City.</div>
         </label>
 
+        <!-- Category -->
         <label class="re-field">
           <span>Category <span class="req">*</span></span>
-          <select id="detailCategory" required>
+          <select id="addCategory" required>
             <option value="">Choose…</option>
-            <option value="Fahrrad">Fahrrad</option>
-            <option value="ÖPNV">ÖPNV</option>
-            <option value="Luft">Luft</option>
-            <option value="Straßenverkehr">Straßenverkehr</option>
+            <option value="Cycling Infrastructure">Cycling Infrastructure</option>
+            <option value="Public Transport">Public Transport</option>
+            <option value="Pedestrian Routes">Pedestrian Routes</option>
+            <option value="Road Traffic (construction sites & traffic density)">Road Traffic (construction sites & traffic density)</option>
+            <option value="Air">Air</option>
+            <option value="Industrial Facilities">Industrial Facilities</option>
           </select>
+          <div class="re-hint">Please choose a category.</div>
         </label>
+
+        <!-- Upload Image -->
+        <label class="re-field">
+          <span>Upload Image</span>
+          <input type="file" id="addImage" accept="image/*" />
+        </label>
+
+        <!-- Buttons -->
+        <div class="re-actions">
+          <button 
+            type="submit"
+            class="btn btn-primary"
+            onclick="this.form.classList.add('validated');">
+            Save
+          </button>
+
+          <button type="button" class="btn btn-ghost" id="cancelAdd">Cancel</button>
+        </div>
+
       </form>
     </div>
+  </section>
 
-    <!-- Buttons unten -->
-    <div class="re-actions" style="margin-top:16px; display:flex; gap:10px;">
-      <button type="button" class="btn btn-primary" id="btnUpdate">Update</button>
-      <button type="button" class="btn btn-danger" id="btnDelete">Delete</button>
-      <button type="button" class="btn btn-ghost" id="closeDetails">Cancel</button>
+
+  <!-- ======================= DETAILS SCREEN ===================== -->
+  <section id="screen-details" class="re-box hidden">
+    <div class="re-box-head"><h3>LOCATION DETAILS</h3></div>
+
+    <div class="re-box-body">
+      <div class="re-details-grid">
+
+        <figure class="re-details-media">
+          <img id="detailImage" src="" alt="" />
+          <figcaption id="detailImageCaption"></figcaption>
+        </figure>
+
+        <form class="re-form" id="detailsForm">
+
+          <!-- Titel -->
+          <label class="re-field">
+            <span>Title <span class="req">*</span></span>
+            <input type="text" id="detailTitle" required />
+          </label>
+
+          <!-- Beschreibung -->
+          <label class="re-field">
+            <span>Beschreibung des Standorts</span>
+            <textarea id="detailDescription" rows="3"></textarea>
+          </label>
+
+          <!-- Straße -->
+          <label class="re-field">
+            <span>Street &amp; No. <span class="req">*</span></span>
+            <input type="text" id="detailStreet" required />
+          </label>
+
+          <!-- PLZ + Stadt -->
+          <label class="re-field">
+            <span>ZIP + City <span class="req">*</span></span>
+            <input type="text" id="detailZipCity" required />
+          </label>
+
+          <!-- Kategorie -->
+          <label class="re-field">
+            <span>Category <span class="req">*</span></span>
+            <select id="detailCategory" required>
+              <option value="">Choose…</option>
+              <option value="Bicycle">Bike Path (paths, parking)</option>
+              <option value="Public Transport">Public Transport</option>
+              <option value="Pedestrians">Pedestrians</option>
+              <option value="Road Traffic">Road Traffic (construction sites, traffic density)</option>
+              <option value="Air">Air</option>
+              <option value="Industrial Facilities">Industrial Facilities</option>
+            </select>
+          </label>
+
+          <!-- Latitude (readonly) -->
+          <label class="re-field">
+            <span>Latitude</span>
+            <input type="text" id="detailLat" readonly />
+          </label>
+
+          <!-- Longitude (readonly) -->
+          <label class="re-field">
+            <span>Longitude</span>
+            <input type="text" id="detailLon" readonly />
+          </label>
+
+          <!-- Replace Image -->
+          <label class="re-field">
+            <span>Replace Image</span>
+            <input type="file" id="detailImageUpload" accept="image/*" />
+          </label>
+        </form>
+      </div>
+
+      <!-- Buttons -->
+      <div class="re-actions" style="margin-top:16px; display:flex; gap:10px;">
+        <button type="button" class="btn btn-primary" id="btnUpdate">Update</button>
+        <button type="button" class="btn btn-danger" id="btnDelete">Delete</button>
+        <button type="button" class="btn btn-ghost" id="closeDetails">Cancel</button>
+      </div>
+
     </div>
-  </div>
-</section>
-
-  </main>
+  </section>
+</main>
 
     <!-- =========================================================
                       GLOBALER FOOTER 
