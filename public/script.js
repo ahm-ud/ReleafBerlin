@@ -7,46 +7,10 @@ const USERS = [
 ];
 
 /* -------------------------------------------
-   Standort-Daten (statisch)
+   Standort-Daten (werden aus der DB geladen)
 -------------------------------------------- */
-const LOCATIONS = [
-  {
-    id: 0,
-    title: "BVG U-Bahn Betriebswerkstatt Friedrichsfelde",
-    description: "BVG U-Bahn Betriebswerkstatt Friedrichsfelde",
-    street: "Zachertstraße 84",
-    zipCity: "10315 Berlin",
-    category: "ÖPNV",
-    photo: "images/bvg-friedrichsfelde.jpg",
-    caption: "ÖPNV • Werkstatt der Berliner Verkehrsbetriebe",
-     lat: "52.505069",
-    lon: "13.5120618"
-  },
-  {
-    id: 1,
-    title: "Upstallweg",
-    description: "Upstallweg",
-    street: "Upstallweg",
-    zipCity: "10319 Berlin",
-    category: "Fahrrad",
-    photo: "images/kein_bild_vorhanden.png",
-    caption: "Fahrradweg",
-     lat: "52.4980279",
-    lon: "13.5187643"
-  },
-  {
-    id: 2,
-    title: "Baustelle Lindenstraße (Köpenick)",
-    description: "Baustelle Lindenstraße (Köpenick)",
-    street: "Lindenstraße",
-    zipCity: "12555 Berlin",
-    category: "Straßenverkehr",
-    photo: "images/kein_bild_vorhanden.png",
-    caption: "Straßenverkehr • Baustellen • Gleisbauarbeiten",
-     lat: "52.5069075",
-    lon: "13.3981521"
-  }
-];
+let LOCATIONS = [];
+
 
 /* -------------------------------------------
    Screens aus dem DOM holen
@@ -66,7 +30,6 @@ const rbUser = document.querySelector(".rb-user");
 /* -------------------------------------------
    Elemente für Location-Liste & Details
 -------------------------------------------- */
-const placeElements = document.querySelectorAll(".place");
 const detailTitleInput = document.querySelector("#detailTitle");
 const detailDescriptionInput = document.querySelector("#detailDescription");
 const detailStreetInput = document.querySelector("#detailStreet");
@@ -106,18 +69,19 @@ function readImageAsBase64(file) {
   });
 }
 
-
 /* aktuell ausgewählter Standort */
 let currentLocationId = null;
 
 /* -------------------------------------------
-   Details für einen Standort anzeigen
+   Details eines Standorts anzeigen
 -------------------------------------------- */
 function openDetailsForLocation(locationId) {
-  const loc = LOCATIONS.find(l => l.id === locationId);
+  // Standort anhand von _id oder id finden
+  const loc = LOCATIONS.find(l => String(l._id ?? l.id) === String(locationId));
   if (!loc) return;
 
-  currentLocationId = loc.id;
+  // Aktuell ausgewählten Standort merken
+  currentLocationId = String(loc._id ?? loc.id);
 
   // Formular-Felder befüllen
   detailTitleInput.value = loc.title;
@@ -197,35 +161,6 @@ function updateDetailButtonsForRole() {
   }
 }
 
-
-/* -------------------------------------------
-   Klick auf Standort in der Liste -> Details
--------------------------------------------- */
-
-/* Verhindert, dass ein Klick auf die gesamte Standort-Karte
-   das Öffnen des Detail-Screens auslöst. */
-placeElements.forEach(placeEl => {
-  placeEl.addEventListener("click", (e) => {
-    e.stopPropagation(); // verhindert Event-Bubbling zur Titel-Logik
-  });
-});
-
-/* Aktiviert das Öffnen des Detail-Screens ausschließlich 
-   über den Standort-Titel. */
-document.querySelectorAll(".place-title").forEach(titleEl => {
-  titleEl.style.cursor = "pointer";   
-
-  titleEl.addEventListener("click", (e) => {
-    e.stopPropagation();  // verhindert, dass der Klick von der Karte abgefangen wird
-
-    const parentArticle = titleEl.closest(".place");  
-    const id = Number(parentArticle.getAttribute("data-id")); 
-
-    openDetailsForLocation(id);   
-  });
-});
-
-
 /* -------------------------------------------
    Globale Variable für eingeloggte Person
 -------------------------------------------- */
@@ -252,7 +187,8 @@ function showScreen(screen) {
 /* -------------------------------------------
    Login-Formular abfangen
 -------------------------------------------- */
-document.querySelector("#screen-login form").addEventListener("submit", function (e) {
+// Login-Handler asynchron (Backend-Aufrufe)
+document.querySelector("#screen-login form").addEventListener("submit", async function (e) {
   e.preventDefault(); // Verhindert Seiten-Reload
 
   this.classList.add("validated");
@@ -283,6 +219,8 @@ document.querySelector("#screen-login form").addEventListener("submit", function
   // NEU: Detail-Buttons (Update/Delete/Close) an Rolle anpassen
   updateDetailButtonsForRole();
   
+  // Nach erfolgreichem Login: Standorte aus DB laden
+  await loadLocationsFromDB();
 
   // Zum Main-Screen wechseln
   showScreen(screenMain);
@@ -323,12 +261,43 @@ async function geocodeAddress(street, zipCity) {
 }
 
 /* -------------------------------------------
-   Neuen Standort in die Liste einfügen
+   Standorte aus der Datenbank laden (GET /loc)
+-------------------------------------------- */
+async function loadLocationsFromDB() {
+  try {
+    // Standorte vom Backend abrufen
+    const response = await fetch("/loc");
+
+    if (!response.ok) {
+      alert("Fehler beim Laden der Standorte aus der DB.");
+      return;
+    }
+
+    const data = await response.json();
+
+    // Daten in globale Locations-Struktur übernehmen
+    LOCATIONS = data;
+
+    // Liste im DOM neu aufbauen
+    locationsList.innerHTML = "";
+    LOCATIONS.forEach(loc => addLocationToList(loc));
+
+  } catch (err) {
+    console.error(err);
+    alert("Backend nicht erreichbar oder Fehler beim Laden der Standorte.");
+  }
+}
+
+/* -------------------------------------------
+   Standort dynamisch zur Liste hinzufügen
 -------------------------------------------- */
 function addLocationToList(loc) {
   const article = document.createElement("article");
   article.classList.add("place");
-  article.setAttribute("data-id", String(loc.id));
+
+  // MongoDB _id verwenden (fallback auf id)
+  const locId = loc._id ?? loc.id;
+  article.setAttribute("data-id", String(locId));
 
   article.innerHTML = `
     <div class="place-media">
@@ -341,13 +310,15 @@ function addLocationToList(loc) {
     </div>
   `;
 
-  // Klick auf neuen Standort -> Details
-  article.addEventListener("click", () => {
-    openDetailsForLocation(loc.id);
+  // Klick auf Standortstitel öffnet Detail-Screen
+  article.querySelector(".place-title").addEventListener("click", (e) => {
+    e.stopPropagation();
+    openDetailsForLocation(String(locId));
   });
 
   locationsList.appendChild(article);
 }
+
 
 
 /* -------------------------------------------
@@ -475,7 +446,7 @@ btnCloseDetails.addEventListener("click", function () {
 btnUpdate.addEventListener("click", async function () {
 
   // Standort aus Datenstruktur holen
-  const loc = LOCATIONS.find(l => l.id === currentLocationId);
+  const loc = LOCATIONS.find(l => String(l._id ?? l.id) === String(currentLocationId));
   if (!loc) return;
 
   // Eingaben auslesen
@@ -528,7 +499,9 @@ btnUpdate.addEventListener("click", async function () {
   loc.category = newCategory;
 
   // UI-Liste im Main-Screen aktualisieren
-  const article = document.querySelector(`article[data-id="${loc.id}"]`);
+  const domId = String(loc._id ?? loc.id);
+  const article = document.querySelector(`article[data-id="${domId}"]`);
+
   if (article) {
     article.querySelector(".place-title").textContent = loc.title;
     article.querySelector(".place-address").textContent = `${loc.street}, ${loc.zipCity}`;
@@ -553,7 +526,7 @@ btnDelete.addEventListener("click", function () {
   }
 
   // Standort aus Daten entfernen
-  const index = LOCATIONS.findIndex(l => l.id === currentLocationId);
+  const index = LOCATIONS.findIndex(l => String(l._id ?? l.id) === String(currentLocationId));
   if (index !== -1) {
     LOCATIONS.splice(index, 1);
   }

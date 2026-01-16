@@ -1,18 +1,12 @@
 {
-  "name": "demo",
+  "name": "mywebapp",
   "version": "0.0.0",
-  "private": "true",
-  "main": "server.js",
+  "type": "module",
   "scripts": {
-    "test": "mocha --exit tests/*",
-    "start": "node server.js"
-  },
-  "license": "MIT",
-  "devDependencies": {
-    "mocha": "^10.2.0",
-    "supertest": "^6.3.4"
+    "start": "node ./src/server.js"
   },
   "dependencies": {
-    "express": "^4.18.2"
+    "express": "^4.18.2",
+    "mongodb": "6.3"
   }
 }
