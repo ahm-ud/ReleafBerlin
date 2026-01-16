@@ -1,10 +1,4 @@
-/* -------------------------------------------
-   Benutzer-Daten (statisch laut Beleg 3)
--------------------------------------------- */
-const USERS = [
-  { username: "admina", password: "password", role: "admin", name: "Mina" },
-  { username: "normalo", password: "password", role: "non-admin", name: "Norman" }
-];
+
 
 /* -------------------------------------------
    Standort-Daten (werden aus der DB geladen)
@@ -187,45 +181,53 @@ function showScreen(screen) {
 /* -------------------------------------------
    Login-Formular abfangen
 -------------------------------------------- */
-// Login-Handler asynchron (Backend-Aufrufe)
-document.querySelector("#screen-login form").addEventListener("submit", async function (e) {
-  e.preventDefault(); // Verhindert Seiten-Reload
+document
+  .querySelector("#screen-login form")
+  .addEventListener("submit", async function (e) {
+    e.preventDefault();
+    this.classList.add("validated");
 
-  this.classList.add("validated");
+    const username = this.querySelector("input[type='text']").value.trim();
+    const password = this.querySelector("input[type='password']").value.trim();
 
-  const username = this.querySelector("input[type='text']").value.trim();
-  const password = this.querySelector("input[type='password']").value.trim();
+    try {
+      const response = await fetch("/users", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ username, password })
+      });
 
-  // Benutzer suchen
-  const user = USERS.find(u => u.username === username && u.password === password);
+      if (!response.ok) {
+        alert("Ungültiger Benutzername oder Passwort!");
+        return;
+      }
 
-  if (!user) {
-    alert("Ungültiger Benutzername oder Passwort!");
-    return;
-  }
+      const user = await response.json();
+      currentUser = user;
 
-  currentUser = user;
+      // Name anzeigen
+      rbUser.textContent = user.name;
 
-     // Name im Main-Screen setzen
-  rbUser.textContent = user.name;
+      // Admin-Button
+      if (user.role === "admin") {
+        addBtn.style.display = "inline-flex";
+      } else {
+        addBtn.style.display = "none";
+      }
 
-  // Button „Add Location“ nur für Admin
-  if (user.role === "admin") {
-    addBtn.style.display = "inline-flex";
-  } else {
-    addBtn.style.display = "none";
-  }
+      updateDetailButtonsForRole();
 
-  // NEU: Detail-Buttons (Update/Delete/Close) an Rolle anpassen
-  updateDetailButtonsForRole();
-  
-  // Nach erfolgreichem Login: Standorte aus DB laden
-  await loadLocationsFromDB();
+      await loadLocationsFromDB();
+      showScreen(screenMain);
 
-  // Zum Main-Screen wechseln
-  showScreen(screenMain);
+    } catch (err) {
+      console.error(err);
+      alert("Server nicht erreichbar");
+    }
+  });
 
-});
 
 /* -------------------------------------------
    Geo-Webservice: Adresse -> lat/lon

@@ -23,7 +23,7 @@ app.use(json());
 // GET http://localhost:8000/ or GET http://localhost:8000/index.html 
 // returns the index.html in /public
 app.use(expressStatic(join(import.meta.dirname, '../public')));
-app.use('/', indexRouter);
+app.use('/login', indexRouter);
 
 // 2) http://localhost:8000/users
 app.use('/users', usersRouter);

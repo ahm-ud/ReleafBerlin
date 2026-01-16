@@ -26,7 +26,7 @@ usersRouter.get('/', async function(req, res) {
 // erwartet eine payload diesen ^^^ Formats 
 // der Header Content-Type: application/json MUSS mitgeschickt
 // 
-usersRouter.post('/', async function(req, res) {
+usersRouter.post('/login', async function(req, res) {
   // wird automatisch in ein JS-Objekt umgewandelt, 
   // wenn Content-Type: application/json gesetzt ist
   let userToLogin = req.body;  
