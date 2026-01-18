@@ -1,4 +1,5 @@
-import { MongoClient } from "mongodb";
+import { MongoClient, ObjectId } from "mongodb";
+
 
 // Replace db_user, db_pass, db_name, db_collection
 const db_user = 'releaf_berlin_ahmed';
@@ -75,3 +76,73 @@ export const findAllLocations = async function() {
     await client.close();
   }
 };
+
+export const createLocation = async function(locationIn) {
+  const client = new MongoClient(uri);
+  try {
+    const database = client.db(db_name);
+    const locations = database.collection(locations_collection);
+
+    // Sicherheitskopie + sicherstellen, dass Client keine IDs setzt
+    const doc = { ...locationIn };
+    delete doc._id;
+    delete doc.id;
+
+    const result = await locations.insertOne(doc);
+    return result.insertedId; // MongoDB ObjectId
+  } finally {
+    await client.close();
+  }
+};
+
+export const findLocationById = async function(id) {
+  const client = new MongoClient(uri);
+  try {
+    const database = client.db(db_name);
+    const locations = database.collection(locations_collection);
+
+    const query = { _id: new ObjectId(id) };
+    const doc = await locations.findOne(query);
+
+    return doc; // null wenn nicht gefunden
+  } finally {
+    await client.close();
+  }
+};
+
+export const updateLocationById = async function(id, locationIn) {
+  const client = new MongoClient(uri);
+  try {
+    const database = client.db(db_name);
+    const locations = database.collection(locations_collection);
+
+    const doc = { ...locationIn };
+    delete doc._id;
+    delete doc.id;
+
+    const filter = { _id: new ObjectId(id) };
+    const update = { $set: doc };
+
+    const result = await locations.updateOne(filter, update);
+    return result.matchedCount; // 0 wenn nicht gefunden
+  } finally {
+    await client.close();
+  }
+};
+
+export const deleteLocationById = async function(id) {
+  const client = new MongoClient(uri);
+  try {
+    const database = client.db(db_name);
+    const locations = database.collection(locations_collection);
+
+    const filter = { _id: new ObjectId(id) };
+    const result = await locations.deleteOne(filter);
+
+    return result.deletedCount; // 0 wenn nicht gefunden
+  } finally {
+    await client.close();
+  }
+};
+
+

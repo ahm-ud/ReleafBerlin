@@ -382,8 +382,7 @@ addForm.addEventListener("submit", async function (e) {
 
   if (fileInput.files && fileInput.files[0]) {
     imageData = await readImageAsBase64(fileInput.files[0]);
-}
-
+  }
 
   try {
     // Geo-Koordinaten holen
@@ -391,32 +390,43 @@ addForm.addEventListener("submit", async function (e) {
 
     if (!coords) {
       alert("Für diese Adresse konnten keine Geo-Koordinaten gefunden werden. Bitte Adresse prüfen.");
-      return; // Add-Screen bleibt offen
+      return;
     }
 
-    // Neue ID bestimmen
-    const newId = LOCATIONS.length > 0
-      ? LOCATIONS[LOCATIONS.length - 1].id + 1
-      : 0;
-
-    const newLocation = {
-      id: newId,
+    // Payload für Backend (WICHTIG: keine id / _id mitschicken)
+    const payload = {
       title,
       description,
       street,
       zipCity,
       category,
-      photo: imageData, 
+      photo: imageData,
       caption: category,
       lat: coords.lat,
       lon: coords.lon
     };
 
-    // In Datenstruktur übernehmen
-    LOCATIONS.push(newLocation);
+    // Standort in DB anlegen
+    const response = await fetch("/loc", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
 
-    // In DOM-Liste hinzufügen
-    addLocationToList(newLocation);
+    console.log("POST /loc status:", response.status);
+    console.log("POST /loc location header:", response.headers.get("Location"));
+    const txt = await response.text();
+    console.log("POST /loc response body:", txt);
+
+
+    if (response.status !== 201) {
+    alert("Fehler beim Anlegen des Standorts. Status: " + response.status);
+    return;
+}
+
+
+    // Liste neu aus DB laden
+    await loadLocationsFromDB();
 
     // Formular zurücksetzen
     addForm.reset();
@@ -427,8 +437,7 @@ addForm.addEventListener("submit", async function (e) {
 
   } catch (err) {
     console.error(err);
-    alert("Es ist ein Fehler beim Geo-Webservice aufgetreten. Bitte später erneut versuchen.");
-    // Add-Screen bleibt offen
+    alert("Es ist ein Fehler beim Anlegen des Standorts aufgetreten. Bitte später erneut versuchen.");
   }
 });
 
@@ -461,84 +470,108 @@ btnUpdate.addEventListener("click", async function () {
     return;
   }
 
-  /* -------------------------------------------
-     Bild aktualisieren (falls ein neues geladen wurde)
-     - base64 wird gespeichert
-  -------------------------------------------- */
+  // Bild vorbereiten (falls neu hochgeladen)
+  let newPhoto = loc.photo;
   const fileInput = document.querySelector("#detailImageUpload");
   if (fileInput.files && fileInput.files[0]) {
-    loc.photo = await readImageAsBase64(fileInput.files[0]);   // base64 übernehmen
+    newPhoto = await readImageAsBase64(fileInput.files[0]);
   }
 
-  /* -------------------------------------------
-     Adresse vergleichen – nur bei Änderungen geocoden
-  -------------------------------------------- */
-  const oldFullAddress = loc.street + ", " + loc.zipCity;
+  // Adresse vergleichen – nur bei Änderungen geocoden
+  const oldFullAddress = (loc.street ?? "") + ", " + (loc.zipCity ?? "");
   const newFullAddress = newStreet + ", " + newZipCity;
 
+  let newLat = loc.lat;
+  let newLon = loc.lon;
+
   if (oldFullAddress !== newFullAddress) {
-
-    // Neue Koordinaten anfragen
     const coords = await geocodeAddress(newStreet, newZipCity);
-
     if (!coords) {
       alert("Für die neue Adresse konnten keine Geo-Koordinaten gefunden werden.");
       return;
     }
-
-    // Koordinaten übernehmen
-    loc.lat = coords.lat;
-    loc.lon = coords.lon;
+    newLat = coords.lat;
+    newLon = coords.lon;
   }
 
-  // Textdaten übernehmen
-  loc.title = newTitle;
-  loc.description = detailDescriptionInput.value.trim();
-  loc.street = newStreet;
-  loc.zipCity = newZipCity;
-  loc.category = newCategory;
+  // Payload für PUT (WICHTIG: keine id/_id schicken)
+  const payload = {
+    title: newTitle,
+    description: detailDescriptionInput.value.trim(),
+    street: newStreet,
+    zipCity: newZipCity,
+    category: newCategory,
+    photo: newPhoto,
+    caption: newCategory,
+    lat: newLat,
+    lon: newLon
+  };
 
-  // UI-Liste im Main-Screen aktualisieren
-  const domId = String(loc._id ?? loc.id);
-  const article = document.querySelector(`article[data-id="${domId}"]`);
+  try {
+    const response = await fetch(`/loc/${currentLocationId}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
 
-  if (article) {
-    article.querySelector(".place-title").textContent = loc.title;
-    article.querySelector(".place-address").textContent = `${loc.street}, ${loc.zipCity}`;
-    article.querySelector(".place-note").textContent = loc.category;
-    article.querySelector("img").src = loc.photo;
+    if (response.status === 204) {
+      await loadLocationsFromDB();
+      showScreen(screenMain);
+      alert("Standort erfolgreich aktualisiert.");
+      return;
+    }
+
+    if (response.status === 404) {
+      alert("Standort nicht gefunden (404). Bitte Liste neu laden.");
+      await loadLocationsFromDB();
+      showScreen(screenMain);
+      return;
+    }
+
+    const txt = await response.text();
+    alert("Fehler beim Update. Status: " + response.status + " | " + txt);
+
+  } catch (err) {
+    console.error(err);
+    alert("Backend nicht erreichbar oder Fehler beim Update.");
   }
-
-  // Details schließen
-  showScreen(screenMain);
-
-  alert("Standort erfolgreich aktualisiert.");
 });
+
 
 
 /* -------------------------------------------
    Delete-Handler für das Löschen von Standorten
 -------------------------------------------- */
-btnDelete.addEventListener("click", function () {
+btnDelete.addEventListener("click", async function () {
 
   if (!confirm("Möchten Sie diesen Standort wirklich löschen?")) {
     return;
   }
 
-  // Standort aus Daten entfernen
-  const index = LOCATIONS.findIndex(l => String(l._id ?? l.id) === String(currentLocationId));
-  if (index !== -1) {
-    LOCATIONS.splice(index, 1);
+  try {
+    const response = await fetch(`/loc/${currentLocationId}`, {
+      method: "DELETE"
+    });
+
+    if (response.status === 204) {
+      await loadLocationsFromDB();
+      showScreen(screenMain);
+      alert("Standort wurde gelöscht.");
+      return;
+    }
+
+    if (response.status === 404) {
+      alert("Standort nicht gefunden (404). Bitte Liste neu laden.");
+      await loadLocationsFromDB();
+      showScreen(screenMain);
+      return;
+    }
+
+    const txt = await response.text();
+    alert("Fehler beim Löschen. Status: " + response.status + " | " + txt);
+
+  } catch (err) {
+    console.error(err);
+    alert("Backend nicht erreichbar oder Fehler beim Löschen.");
   }
-
-  // Element aus DOM entfernen
-  const article = document.querySelector(`article[data-id="${currentLocationId}"]`);
-  if (article) {
-    article.remove();
-  }
-
-  // Zurück zum Main Screen
-  showScreen(screenMain);
-
-  alert("Standort wurde gelöscht.");
 });

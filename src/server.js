@@ -12,7 +12,10 @@ let app = express();
 // json() - Returns middleware that only parses json 
 // and only looks at requests where the Content-Type 
 // header matches the type option.
-app.use(json());
+// JSON Payload kann wegen Base64-Bildern größer sein 
+// Erhöht das JSON-Limit, da Bilder als Base64 im Request übertragen werden können.   
+app.use(json({ limit: "25mb" }));
+app.use(express.urlencoded({ extended: true, limit: "25mb" }));
 
 /*
  * Setting up the routes
