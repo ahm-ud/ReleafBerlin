@@ -191,7 +191,7 @@ document
     const password = this.querySelector("input[type='password']").value.trim();
 
     try {
-      const response = await fetch("/users", {
+      const response = await fetch("/users/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
