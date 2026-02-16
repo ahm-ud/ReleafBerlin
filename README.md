@@ -1,35 +1,48 @@
-# Node Express template project
+# ReLeafBerlin (Final Project)
 
-This project is based on a GitLab [Project Template](https://docs.gitlab.com/ee/user/project/#create-a-project-from-a-built-in-template).
+Web Application for managing and displaying sustainable locations in Berlin.
 
-Improvements can be proposed in the [original project](https://gitlab.com/gitlab-org/project-templates/express).
+This project was developed within the module **Web Application Development (WAD)** at HTW Berlin.
 
-## CI/CD with Auto DevOps
+It is based on Beleg 4 and extended for the final submission.
 
-This template is compatible with [Auto DevOps](https://docs.gitlab.com/ee/topics/autodevops/).
+---
 
-If Auto DevOps is not already enabled for this project, you can [turn it on](https://docs.gitlab.com/ee/topics/autodevops/#enable-or-disable-auto-devops) in the project settings.
+## Author
 
-### Developing with Gitpod
+**Ahmed Al-Odaini**  
+MatrNr: 592811
 
-This template has a fully-automated dev setup for [Gitpod](https://docs.gitlab.com/ee/integration/gitpod.html).
+---
 
-If you open this project in Gitpod, you'll get all Node dependencies pre-installed.
+## Project Description
 
+ReLeafBerlin is a Node.js + Express single-page web application.
 
+Users can:
+- Log in
+- Create, update and delete locations
+- View locations in a list
+- Display locations on an interactive map (OpenStreetMap + Leaflet)
 
-#### Team:
+The application uses MongoDB for data persistence.
 
-* **Ahmed Al-Odaini**, MatrNr: 592811
-* **Bashar Al Abdalla**, MatrNr: 592500
+---
 
+## Technologies Used
 
+- Node.js
+- Express.js
+- MongoDB
+- Vanilla JavaScript (Frontend SPA)
+- OpenStreetMap (Map data)
+- Leaflet (Interactive map library)
 
+---
 
+## Installation & Run
 
-##### Project Info:
+1. Clone the repository:
 
-* **App name:** ReLeafBerlin
-* **Kurzbeschreibung:**  
-  ReLeafBerlin ist eine einfache Node.js-Express-Webanwendung, die im Rahmen des Moduls *Web Application Development* entwickelt wird.  
-  Ziel ist es, später eine kleine Single-Page-Application zu erstellen, die nachhaltige Orte in Berlin darstellt.
+```bash
+git clone https://gitlab.rz.htw-berlin.de/Ahmed.Al-Odaini/releafberlin_final.git
