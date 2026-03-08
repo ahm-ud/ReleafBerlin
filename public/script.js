@@ -275,7 +275,12 @@ function updateDetailButtonsForRole() {
     detailStreetInput.readOnly = true;
     detailZipCityInput.readOnly = true;
     detailCategorySelect.disabled = true;
+
     document.querySelector("#detailImageUpload").disabled = true;
+
+    if (removeBtn) {
+      removeBtn.style.display = "none";
+    }
 
   }
 }
@@ -703,6 +708,21 @@ addForm.addEventListener("submit", async function (e) {
 -------------------------------------------- */
 btnCloseDetails.addEventListener("click", function () {
   showScreen(screenMain);
+});
+/* -------------------------------------------
+   ESC-Taste schließt Details Screen
+-------------------------------------------- */
+document.addEventListener("keydown", function (e) {
+
+  if (e.key === "Escape") {
+
+    // Wenn Details Screen sichtbar ist -> zurück zum Main Screen
+    if (!screenDetails.classList.contains("hidden")) {
+      showScreen(screenMain);
+    }
+
+  }
+
 });
 
 /* -------------------------------------------
