@@ -1,10 +1,44 @@
-
-
 /* -------------------------------------------
    Standort-Daten (werden aus der DB geladen)
 -------------------------------------------- */
 let LOCATIONS = [];
 
+// Flag verhindert mehrfaches Absenden während eines laufenden Updates
+let isUpdatingLocation = false;
+
+/* -------------------------------------------
+   Leaflet: Map & Marker Verwaltung
+-------------------------------------------- */
+let map = null;
+let mapInitialized = false;
+
+// Flag zur Markierung, ob aktuelles Bild entfernt werden soll
+let removeImageFlag = false;
+
+/* Marker je Location-ID (MongoDB _id oder id) */
+const markersById = new Map();
+
+/* -------------------------------------------
+   Leaflet: Marker-Icons (normal / highlight)
+-------------------------------------------- */
+const defaultIcon = L.icon({
+  iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41]
+});
+
+const highlightIcon = L.icon({
+  /* Grüner Marker */
+  iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png",
+  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+  iconSize: [35, 55],        // größer
+  iconAnchor: [17, 55],
+  popupAnchor: [0, -100],
+  shadowSize: [55, 55]
+});
 
 /* -------------------------------------------
    Screens aus dem DOM holen
@@ -39,6 +73,51 @@ const btnCloseDetails = document.querySelector("#closeDetails");
 const detailLatInput = document.querySelector("#detailLat");  
 const detailLonInput = document.querySelector("#detailLon");
 
+// -------------------------------------------
+// Bild-Upload: Dateiname anzeigen & Entfernen ermöglichen
+// -------------------------------------------
+const detailUploadInput = document.querySelector("#detailImageUpload");
+const currentImageInfo = document.querySelector("#currentImageInfo");
+const removeBtn = document.querySelector("#removeSelectedImage");
+
+// Anzeige des Dateinamens bei Auswahl
+if (detailUploadInput) {
+  detailUploadInput.addEventListener("change", function () {
+    if (this.files && this.files[0]) {
+      if (currentImageInfo) {
+        currentImageInfo.textContent = this.files[0].name;
+      }
+      removeImageFlag = false;
+    }
+  });
+}
+
+// Entfernen-Button (X) für Bild
+if (removeBtn) {
+  removeBtn.addEventListener("click", function () {
+
+    // File-Input zurücksetzen
+    if (detailUploadInput) {
+      detailUploadInput.value = "";
+    }
+
+    // Flag setzen, damit Backend das aktuelle Bild löscht
+    removeImageFlag = true;
+
+    // Dateiname-Anzeige leeren
+    if (currentImageInfo) {
+      currentImageInfo.textContent = "";
+    }
+
+    // Vorschau auf Default zurücksetzen
+    if (detailImage) {
+      detailImage.src = "images/kein_bild_vorhanden.png";
+    }
+  });
+}
+
+
+
 
 /* -------------------------------------------
    Add-Form & Location-Liste
@@ -50,18 +129,6 @@ const addZipCityInput = document.querySelector("#addZipCity");
 const addCategorySelect = document.querySelector("#addCategory");
 
 const locationsList = document.querySelector("#locationsList");
-
-/* ----------------------------------------------------------
-   Hilfsfunktion zum Lesen eines Bildes 
------------------------------------------------------------ */
-function readImageAsBase64(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = reject;
-    reader.readAsDataURL(file);   // Bild wird in Base64 umgewandelt
-  });
-}
 
 /* aktuell ausgewählter Standort */
 let currentLocationId = null;
@@ -85,9 +152,66 @@ function openDetailsForLocation(locationId) {
   detailCategorySelect.value = loc.category || "";
 
   // Bild + Caption
-  detailImage.src = loc.photo;
-  detailImage.alt = loc.title;
+  const uploadInput = document.querySelector("#detailImageUpload");
+
+  // Default-Zustand zurücksetzen
+  removeImageFlag = false;
+
+  if (loc.photo === "images/kein_bild_vorhanden.png") {
+
+    // Default-Bild anzeigen
+    detailImage.src = "images/kein_bild_vorhanden.png";
+    detailImage.alt = "Default image";
+
+    // Kein Dateiname anzeigen
+    if (currentImageInfo) {
+      currentImageInfo.textContent = "";
+    }
+
+    // Delete-Button ausblenden (kein Bild vorhanden)
+    if (removeBtn) {
+      removeBtn.style.display = "none";
+    }
+
+  } else {
+
+    // Echtes Bild anzeigen
+    detailImage.src = loc.photo;
+    detailImage.alt = loc.title;
+
+    // Dateiname der gespeicherten Datei anzeigen
+    if (currentImageInfo) {
+      const fileName = loc.photo.split("/").pop();
+      currentImageInfo.textContent = fileName;
+    }
+
+    // Delete-Button anzeigen
+    if (removeBtn) {
+      removeBtn.style.display = "inline-block";
+    }
+  }
+
+  // File-Input immer leeren
+  if (uploadInput) {
+    uploadInput.value = "";
+  }
+
   detailImageCaption.textContent = loc.caption || "";
+
+  const fileInput = document.querySelector("#detailImageUpload");
+
+if (loc.photo === "images/kein_bild_vorhanden.png") {
+
+  // Kein gespeichertes Bild
+  fileInput.removeAttribute("data-existing");
+
+} else {
+
+  // Gespeicherten Dateinamen im Input anzeigen
+  const fileName = loc.photo.split("/").pop();
+  fileInput.setAttribute("data-existing", fileName);
+
+}
 
   // Latitude & Longitude anzeigen
   document.querySelector("#detailLat").value = loc.lat ?? "";
@@ -99,6 +223,7 @@ function openDetailsForLocation(locationId) {
   // Detail-Screen anzeigen
   showScreen(screenDetails);
 }
+
 
 /* -------------------------------------------
    Buttons im Detail-Screen je nach Rolle
@@ -179,6 +304,33 @@ function showScreen(screen) {
 }
 
 /* -------------------------------------------
+   Leaflet: Karte initialisieren (OSM + Leaflet)
+-------------------------------------------- */
+function initMapIfNeeded() {
+  if (mapInitialized) return;
+
+  const mapEl = document.querySelector("#map");
+  if (!mapEl) return; 
+
+  // Karte auf Berlin zentrieren
+  map = L.map("map").setView([52.52, 13.405], 12);
+
+  // OpenStreetMap Tiles
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom: 19,
+    attribution: '&copy; OpenStreetMap-Mitwirkende'
+  }).addTo(map);
+
+  mapInitialized = true;
+
+  // Leaflet braucht manchmal ein Re-Layout, wenn Container vorher hidden war
+  setTimeout(() => {
+    try { map.invalidateSize(); } catch (_) {}
+  }, 0);
+}
+
+
+/* -------------------------------------------
    Login-Formular abfangen
 -------------------------------------------- */
 document
@@ -200,7 +352,7 @@ document
       });
 
       if (!response.ok) {
-        alert("Ungültiger Benutzername oder Passwort!");
+        alert("Invalid username or password!");
         return;
       }
 
@@ -222,45 +374,76 @@ document
       await loadLocationsFromDB();
       showScreen(screenMain);
 
+      // Leaflet: Karte erst initialisieren, wenn Main-Screen sichtbar ist
+      initMapIfNeeded();
+      refreshMapMarkers();
+
     } catch (err) {
       console.error(err);
-      alert("Server nicht erreichbar");
+      alert("Server not available!");
     }
   });
 
 
 /* -------------------------------------------
-   Geo-Webservice: Adresse -> lat/lon
-   (Beispiel mit Nominatim / OpenStreetMap)
+   Adresse -> Geo-Koordinaten (über Server-Proxy)
 -------------------------------------------- */
 async function geocodeAddress(street, zipCity) {
-  const query = encodeURIComponent(`${street}, ${zipCity}, Berlin, Germany`);
-  const url = `https://nominatim.openstreetmap.org/search?format=json&q=${query}`;
 
+  const url = `/geocode?street=${encodeURIComponent(street)}&zipCity=${encodeURIComponent(zipCity)}`;
 
   const response = await fetch(url, {
-    headers: {
-      "Accept": "application/json",
-      "User-Agent": "ReLeafBerlin/1.0 (example@example.com)"
-    }
+    headers: { "Accept": "application/json" }
   });
 
   if (!response.ok) {
-    throw new Error("Geo-Webservice nicht erreichbar");
+    throw new Error("Geo web service unavailable");
   }
 
-  const data = await response.json();
-
-  if (!data || data.length === 0) {
-    // Keine Treffer
-    return null;
-  }
-
-  return {
-    lat: parseFloat(data[0].lat),
-    lon: parseFloat(data[0].lon)
-  };
+  return await response.json(); // entweder {lat, lon} oder null
 }
+
+
+/* -------------------------------------------
+   Leaflet: Marker anhand LOCATIONS aktualisieren
+-------------------------------------------- */
+function refreshMapMarkers() {
+  if (!mapInitialized || !map) return;
+
+  // Marker löschen, damit wir sauber neu zeichnen
+  for (const marker of markersById.values()) {
+    marker.remove();
+  }
+  markersById.clear();
+
+  // Neue Marker anlegen
+  LOCATIONS.forEach((loc) => {
+    const id = String(loc._id ?? loc.id);
+
+    const lat = typeof loc.lat === "number" ? loc.lat : parseFloat(loc.lat);
+    const lon = typeof loc.lon === "number" ? loc.lon : parseFloat(loc.lon);
+
+    if (!Number.isFinite(lat) || !Number.isFinite(lon)) return;
+
+    const marker = L.marker([lat, lon], { icon: defaultIcon }).addTo(map);
+
+    /* Tooltip: Name der Location beim Hover anzeigen */
+    marker.bindTooltip(`${loc.title ?? "Location"}`, {
+      direction: "top",
+      offset: [0, -50],
+      opacity: 0.95,
+      sticky: true
+    });
+
+    marker.bindPopup(`<b>${loc.title ?? "Location"}</b>`);
+
+    // Optional: Klick auf Marker öffnet Details wie Klick in Liste
+    marker.on("click", () => openDetailsForLocation(id));
+
+    markersById.set(id, marker);
+  });
+}
+
 
 /* -------------------------------------------
    Standorte aus der Datenbank laden (GET /loc)
@@ -271,7 +454,7 @@ async function loadLocationsFromDB() {
     const response = await fetch("/loc");
 
     if (!response.ok) {
-      alert("Fehler beim Laden der Standorte aus der DB.");
+      alert("Error loading locations from the database.");
       return;
     }
 
@@ -284,11 +467,59 @@ async function loadLocationsFromDB() {
     locationsList.innerHTML = "";
     LOCATIONS.forEach(loc => addLocationToList(loc));
 
+    // Leaflet: Marker aktualisieren (falls die Karte schon initialisiert wurde)
+    refreshMapMarkers();
+
+
   } catch (err) {
     console.error(err);
-    alert("Backend nicht erreichbar oder Fehler beim Laden der Standorte.");
+    alert("Backend unavailable or error loading locations.");
   }
 }
+
+/* -------------------------------------------
+   Leaflet: Marker highlighten bei Hover
+-------------------------------------------- */
+function highlightMarker(id) {
+  const marker = markersById.get(String(id));
+  if (!marker) return;
+
+  // Marker größer + grün
+  marker.setIcon(highlightIcon);
+
+  // Tooltip anzeigen
+  marker.openTooltip();
+
+  // Marker nach vorne holen
+  marker.setZIndexOffset(1000);
+
+  if (map) {
+    const latLng = marker.getLatLng();
+    const bounds = map.getBounds();
+
+    if (!bounds.contains(latLng)) {
+      map.panTo(latLng, { animate: true, duration: 0.4 });
+    }
+  }  
+}
+
+/* -------------------------------------------
+   Leaflet: Hover-Highlight zurücksetzen
+-------------------------------------------- */
+function unhighlightMarker(id) {
+  const marker = markersById.get(String(id));
+  if (!marker) return;
+
+  // Zurück zum Standard-Marker
+  marker.setIcon(defaultIcon);
+
+  // Tooltip schließen
+  marker.closeTooltip();
+
+  marker.setZIndexOffset(0);
+}
+
+
 
 /* -------------------------------------------
    Standort dynamisch zur Liste hinzufügen
@@ -299,7 +530,6 @@ function addLocationToList(loc) {
 
   // MongoDB _id verwenden (fallback auf id)
   const locId = loc._id ?? loc.id;
-  article.setAttribute("data-id", String(locId));
 
   article.innerHTML = `
     <div class="place-media">
@@ -311,6 +541,17 @@ function addLocationToList(loc) {
       <p class="place-note">${loc.caption || loc.category}</p>
     </div>
   `;
+  //ID der Location speichern (für Map-Verknüpfung)
+  const id = String(loc._id ?? loc.id);
+  article.dataset.id = id;
+  //Hover-Effekt: Beim Überfahren mit der Maus -> Marker hervorheben
+  article.addEventListener("mouseenter", () => {
+    highlightMarker(id);
+  });
+  //Hover-Ende: Wenn Maus das Element verlässt -> Marker zurücksetzen
+  article.addEventListener("mouseleave", () => {
+    unhighlightMarker(id);
+  });
 
   // Klick auf Standortstitel öffnet Detail-Screen
   article.querySelector(".place-title").addEventListener("click", (e) => {
@@ -320,8 +561,6 @@ function addLocationToList(loc) {
 
   locationsList.appendChild(article);
 }
-
-
 
 /* -------------------------------------------
    Logout-Funktion
@@ -366,7 +605,7 @@ addForm.addEventListener("submit", async function (e) {
 
   // Nur Admin darf anlegen
   if (!currentUser || currentUser.role !== "admin") {
-    alert("Nur Admin kann neue Standorte anlegen.");
+    alert("Only the administrator can create new locations.");
     return;
   }
 
@@ -379,19 +618,14 @@ addForm.addEventListener("submit", async function (e) {
   /* ----------------------------------------------------------
     Bild verarbeiten (falls der Benutzer eines hochlädt)
   ----------------------------------------------------------- */
-  const fileInput = document.querySelector("#addImage");
-  let imageData = "images/kein_bild_vorhanden.png";  // Standardbild
 
-  if (fileInput.files && fileInput.files[0]) {
-    imageData = await readImageAsBase64(fileInput.files[0]);
-  }
 
   try {
     // Geo-Koordinaten holen
     const coords = await geocodeAddress(street, zipCity);
 
     if (!coords) {
-      alert("Für diese Adresse konnten keine Geo-Koordinaten gefunden werden. Bitte Adresse prüfen.");
+      alert("No geographic coordinates could be found for this address. Please check the address.");
       return;
     }
 
@@ -402,18 +636,40 @@ addForm.addEventListener("submit", async function (e) {
       street,
       zipCity,
       category,
-      photo: imageData,
       caption: category,
       lat: coords.lat,
       lon: coords.lon
     };
 
-    // Standort in DB anlegen
+    /* ----------------------------------------------------------------
+      Erstellung eines neuen Standorts mittels multipart/form-data
+      Bilddatei wird optional als "image" übertragen
+    ----------------------------------------------------------------- */
+    const formData = new FormData();
+
+    // Standortdaten anhängen
+    formData.append("title", title);
+    formData.append("description", description);
+    formData.append("street", street);
+    formData.append("zipCity", zipCity);
+    formData.append("category", category);
+    formData.append("caption", category);
+    formData.append("lat", coords.lat);
+    formData.append("lon", coords.lon);
+
+    // Optionales Bild anhängen (wird im Backend via multer verarbeitet)
+    const fileInput = document.querySelector("#addImage");
+    if (fileInput.files && fileInput.files[0]) {
+      formData.append("image", fileInput.files[0]);
+    }
+
+    // POST-Request ohne Content-Type Header,
+    // da der Browser multipart/form-data automatisch setzt
     const response = await fetch("/loc", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
+      body: formData
     });
+
 
     console.log("POST /loc status:", response.status);
     console.log("POST /loc location header:", response.headers.get("Location"));
@@ -424,9 +680,7 @@ addForm.addEventListener("submit", async function (e) {
     if (response.status !== 201) {
     alert("Fehler beim Anlegen des Standorts. Status: " + response.status);
     return;
-}
-
-
+    }
     // Liste neu aus DB laden
     await loadLocationsFromDB();
 
@@ -439,7 +693,7 @@ addForm.addEventListener("submit", async function (e) {
 
   } catch (err) {
     console.error(err);
-    alert("Es ist ein Fehler beim Anlegen des Standorts aufgetreten. Bitte später erneut versuchen.");
+    alert("An error occurred while creating the location. Please try again later.");
   }
 });
 
@@ -456,88 +710,145 @@ btnCloseDetails.addEventListener("click", function () {
 -------------------------------------------- */
 btnUpdate.addEventListener("click", async function () {
 
-  // Standort aus Datenstruktur holen
-  const loc = LOCATIONS.find(l => String(l._id ?? l.id) === String(currentLocationId));
-  if (!loc) return;
+  // Verhindert mehrfaches Klicken während laufendem Update
+  if (isUpdatingLocation) return;
+  isUpdatingLocation = true;
 
-  // Eingaben auslesen
-  const newTitle = detailTitleInput.value.trim();
-  const newStreet = detailStreetInput.value.trim();
-  const newZipCity = detailZipCityInput.value.trim();
-  const newCategory = detailCategorySelect.value;
-
-  // Validierung der Pflichtfelder
-  if (!newTitle || !newStreet || !newZipCity) {
-    alert("Bitte alle Pflichtfelder ausfüllen.");
-    return;
-  }
-
-  // Bild vorbereiten (falls neu hochgeladen)
-  let newPhoto = loc.photo;
-  const fileInput = document.querySelector("#detailImageUpload");
-  if (fileInput.files && fileInput.files[0]) {
-    newPhoto = await readImageAsBase64(fileInput.files[0]);
-  }
-
-  // Adresse vergleichen – nur bei Änderungen geocoden
-  const oldFullAddress = (loc.street ?? "") + ", " + (loc.zipCity ?? "");
-  const newFullAddress = newStreet + ", " + newZipCity;
-
-  let newLat = loc.lat;
-  let newLon = loc.lon;
-
-  if (oldFullAddress !== newFullAddress) {
-    const coords = await geocodeAddress(newStreet, newZipCity);
-    if (!coords) {
-      alert("Für die neue Adresse konnten keine Geo-Koordinaten gefunden werden.");
-      return;
-    }
-    newLat = coords.lat;
-    newLon = coords.lon;
-  }
-
-  // Payload für PUT (WICHTIG: keine id/_id schicken)
-  const payload = {
-    title: newTitle,
-    description: detailDescriptionInput.value.trim(),
-    street: newStreet,
-    zipCity: newZipCity,
-    category: newCategory,
-    photo: newPhoto,
-    caption: newCategory,
-    lat: newLat,
-    lon: newLon
-  };
+  // Update-Button temporär deaktivieren
+  btnUpdate.disabled = true;
 
   try {
+
+    // Standort aus Datenstruktur holen
+    const loc = LOCATIONS.find(l => String(l._id ?? l.id) === String(currentLocationId));
+    if (!loc) {
+      isUpdatingLocation = false;
+      btnUpdate.disabled = false;
+      return;
+    }
+
+    // Eingaben auslesen
+    const newTitle = detailTitleInput.value.trim();
+    const newStreet = detailStreetInput.value.trim();
+    const newZipCity = detailZipCityInput.value.trim();
+    const newCategory = detailCategorySelect.value;
+
+    // Validierung der Pflichtfelder
+    if (!newTitle || !newStreet || !newZipCity) {
+      alert("Please fill in all required fields!");
+      return;
+    }
+
+    
+
+    // Adresse vergleichen – nur bei Änderungen geocoden
+    const oldFullAddress = (loc.street ?? "") + ", " + (loc.zipCity ?? "");
+    const newFullAddress = newStreet + ", " + newZipCity;
+
+    let newLat = loc.lat;
+    let newLon = loc.lon;
+
+    if (oldFullAddress !== newFullAddress) {
+
+      // Geocoding nur wenn Adresse wirklich geändert wurde
+      const coords = await geocodeAddress(newStreet, newZipCity);
+
+      if (!coords) {
+      alert("No geographic coordinates could be found for the new address. The old address remains unchanged.");
+
+      
+      detailStreetInput.value = loc.street;
+      detailZipCityInput.value = loc.zipCity;
+
+      return;
+    }
+
+      newLat = coords.lat;
+      newLon = coords.lon;
+    }
+
+    // Payload für PUT (WICHTIG: keine id/_id schicken)
+    const payload = {
+      title: newTitle,
+      description: detailDescriptionInput.value.trim(),
+      street: newStreet,
+      zipCity: newZipCity,
+      category: newCategory,
+      caption: newCategory,
+      lat: newLat,
+      lon: newLon
+    };
+
+    /* ---------------------------------------------
+      Aktualisierung eines bestehenden Standorts
+      Unterstützt optionalen Bildaustausch 
+    ---------------------------------------------- */
+    const formData = new FormData();
+
+    // Aktualisierte Standortdaten anhängen
+    formData.append("title", newTitle);
+    formData.append("description", detailDescriptionInput.value.trim());
+    formData.append("street", newStreet);
+    formData.append("zipCity", newZipCity);
+    formData.append("category", newCategory);
+    formData.append("caption", newCategory);
+    formData.append("lat", newLat);
+    formData.append("lon", newLon);
+
+    // Falls ein neues Bild ausgewählt wurde,
+    // wird dieses die bestehende Datei im Backend ersetzen
+    const fileInput = document.querySelector("#detailImageUpload");
+    if (fileInput.files && fileInput.files[0]) {
+      formData.append("image", fileInput.files[0]);
+    }
+
+    // Wenn Bild über X-Button entfernt wurde,
+    // wird ein entsprechendes Lösch-Flag an das Backend gesendet
+    if (removeImageFlag) {
+      formData.append("removeImage", "true");
+    }
+
+    // PUT-Request als multipart/form-data
     const response = await fetch(`/loc/${currentLocationId}`, {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
+      body: formData
     });
+
 
     if (response.status === 204) {
       await loadLocationsFromDB();
       showScreen(screenMain);
-      alert("Standort erfolgreich aktualisiert.");
+      alert("Location successfully updated!");
+
+      // Entfernen-Flag nach erfolgreichem Update zurücksetzen
+      removeImageFlag = false;
+
       return;
     }
 
     if (response.status === 404) {
-      alert("Standort nicht gefunden (404). Bitte Liste neu laden.");
+      alert("Location not found (404). Please reload the list!");
       await loadLocationsFromDB();
       showScreen(screenMain);
       return;
     }
 
     const txt = await response.text();
-    alert("Fehler beim Update. Status: " + response.status + " | " + txt);
+    alert("Error during update. Status: " + response.status + " | " + txt);
 
   } catch (err) {
     console.error(err);
-    alert("Backend nicht erreichbar oder Fehler beim Update.");
+    alert("Backend unavailable or error during update. Try again later!");
   }
+
+  finally {
+    // Update wieder freigeben
+    isUpdatingLocation = false;
+    btnUpdate.disabled = false;
+  }
+
 });
+
 
 
 
@@ -546,7 +857,7 @@ btnUpdate.addEventListener("click", async function () {
 -------------------------------------------- */
 btnDelete.addEventListener("click", async function () {
 
-  if (!confirm("Möchten Sie diesen Standort wirklich löschen?")) {
+  if (!confirm("Are you sure you want to delete this location?")) {
     return;
   }
 
@@ -558,22 +869,22 @@ btnDelete.addEventListener("click", async function () {
     if (response.status === 204) {
       await loadLocationsFromDB();
       showScreen(screenMain);
-      alert("Standort wurde gelöscht.");
+      alert("Location deleted!");
       return;
     }
 
     if (response.status === 404) {
-      alert("Standort nicht gefunden (404). Bitte Liste neu laden.");
+      alert("Location not found (404). Please reload the list!");
       await loadLocationsFromDB();
       showScreen(screenMain);
       return;
     }
 
     const txt = await response.text();
-    alert("Fehler beim Löschen. Status: " + response.status + " | " + txt);
+    alert("Error while deleting. Status: " + response.status + " | " + txt);
 
   } catch (err) {
     console.error(err);
-    alert("Backend nicht erreichbar oder Fehler beim Löschen.");
+    alert("Backend unavailable or error during deletion. Try again later!");
   }
 });

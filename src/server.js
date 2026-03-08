@@ -34,6 +34,83 @@ app.use('/users', usersRouter);
 app.use('/loc', locRouter);
 
 
+/* -------------------------------------------
+   Geocoding Proxy (Server-Side) für Nominatim
+-------------------------------------------- */
+const geoCache = new Map();
+
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+app.get("/geocode", async function (req, res) {
+
+  const street = String(req.query.street ?? "").trim();
+  const zipCity = String(req.query.zipCity ?? "").trim();
+
+  if (!street || !zipCity) {
+    return res.status(400).json({ error: "Missing street/zipCity" });
+  }
+
+  const cacheKey = `${street}|${zipCity}`.toLowerCase();
+
+  // Cache nutzen, um Rate-Limits zu vermeiden
+  if (geoCache.has(cacheKey)) {
+    return res.status(200).json(geoCache.get(cacheKey));
+  }
+
+  const query = encodeURIComponent(`${street}, ${zipCity}, Berlin, Germany`);
+  const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${query}`;
+
+  // Mehrere Versuche, falls Nominatim kurzzeitig blockt (z.B. 425/429)
+  const maxTries = 3;
+
+  for (let attempt = 1; attempt <= maxTries; attempt++) {
+
+    try {
+      const response = await fetch(url, {
+        headers: {
+          "Accept": "application/json",
+          // WICHTIG: Auf dem Server kann man einen echten User-Agent setzen
+          "User-Agent": "ReLeafBerlin/1.0 (contact: ahmed@student.htw-berlin.de)"
+        }
+      });
+
+      // Bei Rate-Limit / Too Early / Busy -> warten und nochmal
+      if ([425, 429, 503].includes(response.status)) {
+        await sleep(800 * attempt);
+        continue;
+      }
+
+      if (!response.ok) {
+        return res.status(502).json({ error: `Nominatim error: ${response.status}` });
+      }
+
+      const data = await response.json();
+
+      if (!data || data.length === 0) {
+        return res.status(200).json(null);
+      }
+
+      const coords = {
+        lat: parseFloat(data[0].lat),
+        lon: parseFloat(data[0].lon)
+      };
+
+      // Cache speichern
+      geoCache.set(cacheKey, coords);
+
+      return res.status(200).json(coords);
+
+    } catch (e) {
+      // Network/Fetch Fehler -> kurz warten und retry
+      await sleep(800 * attempt);
+    }
+  }
+
+  return res.status(504).json({ error: "Geocoding service temporarily unavailable" });
+});
+
 // 3) Send "Not found" for all other 'paths'
 app.use(function(req, res) {
   res.status(404).send('Not found: ' + req.path);

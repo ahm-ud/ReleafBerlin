@@ -6,8 +6,11 @@
   <title>ReLeafBerlin – SPA</title>
 
   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  
   <script src="script.js" defer></script>
 </head>
+
 <body>
 
   <!-- =========================================================
@@ -79,7 +82,16 @@
         <h3>LOCATIONS</h3>
       </div>
 
-      <div class="re-box-body" id="locationsList"></div>  <!-- wird per JavaScript aus der DB gefüllt -->
+      <div class="re-main-split">
+        <div class="re-main-list">
+          <div class="re-box-body" id="locationsList"></div>
+        </div>
+
+        <div class="re-main-map">
+          <div id="map"></div>
+        </div>
+      </div>
+
 
       <div class="re-list-foot">
         <button class="re-add btn btn-primary" id="btnAdd">+ Add Location</button>
@@ -223,9 +235,21 @@
 
           <!-- Replace Image -->
           <label class="re-field">
-            <span>Replace Image</span>
+            <span>
+            Edit Image
+            <small class="sub-text">(add or replace image)</small>
+          </span>
             <input type="file" id="detailImageUpload" accept="image/*" />
-          </label>
+            
+          </label>  
+          
+          <!-- Delete Image -->
+            <div id="imageFileInfo" class="mt-2">
+            <div id="currentImageInfo"></div>
+            <button type="button" id="removeSelectedImage" class="btn btn-sm btn-outline-danger">
+              Delete Image
+            </button>
+          </div>
         </form>
       </div>
 
@@ -247,5 +271,6 @@
     <p><a href="#">Imprint</a> | <a href="#">Privacy Policy</a></p>
   </footer>
 
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </body>
 </html>

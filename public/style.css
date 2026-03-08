@@ -391,3 +391,67 @@ form.validated .re-field select:invalid + .re-hint {
 .hidden {
   display:none !important;
 }
+
+/* Main Screen: Liste links (1/3), Karte rechts (2/3) */
+#screen-main .re-main-split {
+  display: flex;
+  gap: 16px;
+  align-items: stretch;
+}
+
+#screen-main .re-main-list {
+  flex: 1;
+  min-width: 280px;
+}
+
+#screen-main .re-main-map {
+  flex: 2;
+  min-width: 320px;
+}
+
+#screen-main #map {
+  width: 100%;
+  height: 600px;
+  border-radius: 12px;
+}
+
+/* Responsive: auf kleinen Screens untereinander */
+@media (max-width: 900px) {
+  #screen-main .re-main-split {
+    flex-direction: column;
+  }
+
+  #screen-main #map {
+    height: 420px;
+  }
+}
+
+/* Leaflet Marker Highlight */
+.re-marker-highlight {
+  filter: drop-shadow(0 0 8px rgba(0, 160, 90, 0.9));
+  transform: scale(1.2);
+}
+
+
+
+/* -------------------------------------------
+   Main-Screen: Scrollbare Liste + fixe Kartenhöhe
+-------------------------------------------- */
+#screen-main .re-main-list {
+  max-height: 600px;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+#screen-main .re-main-map {
+  height: 600px;
+}
+
+#screen-main #map {
+  height: 100%;
+}
+
+.sub-text {
+  font-size: 0.8rem;  
+  color: #666;         
+}
