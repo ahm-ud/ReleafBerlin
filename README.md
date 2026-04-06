@@ -66,10 +66,16 @@ MongoDB Database
 
 ## -Screenshots
 
+#### Main Screen
+![Main Screen](screenshots/main.png) 
 
-![Main Screen](screenshots/main.png)
+#### Login Screen
 ![Login Screen](screenshots/login.png)
+
+#### Add Location
 ![Add Locatin Screen](screenshots/add.png)
+
+#### Details View
 ![Locatin details Screen](screenshots/details.png)
 
 ---
