@@ -64,7 +64,7 @@ MongoDB Database
 
 ---
 
-## 📸 Screenshots
+## -Screenshots
 
 ```md
 ![Main Screen](screenshots/main.png)
