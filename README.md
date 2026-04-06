@@ -94,7 +94,7 @@ Example endpoints:
 ## -Author
 
 **Ahmed Al-Odaini**
-B.Sc. Applied Computer Science – HTW Berlin
+Applied Computer Science – HTW Berlin
 
 ---
 
