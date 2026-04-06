@@ -66,12 +66,11 @@ MongoDB Database
 
 ## -Screenshots
 
-```md
+
 ![Main Screen](screenshots/main.png)
 ![Login Screen](screenshots/login.png)
 ![Add Locatin Screen](screenshots/add.png)
 ![Locatin details Screen](screenshots/details.png)
-```
 
 ---
 
