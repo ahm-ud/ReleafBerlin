@@ -1,48 +1,99 @@
-# ReLeafBerlin (Final Project)
+# 🌱 ReLeafBerlin
 
-Web Application for managing and displaying sustainable locations in Berlin.
+A full-stack web application for managing and visualizing sustainable and non-sustainable locations in Berlin.
 
-This project was developed within the module **Web Application Development (WAD)** at HTW Berlin.
-
-It is based on Beleg 4 and extended for the final submission.
+This project was developed as part of the **Web Application Development (WAD)** course at HTW Berlin.
 
 ---
 
-## Author
+## -Overview
 
-**Ahmed Al-Odaini**  
-MatrNr: 592811
+ReLeafBerlin is a Single Page Application (SPA) that allows users to explore, manage, and visualize environmental locations on an interactive map.
 
----
-
-## Project Description
-
-ReLeafBerlin is a Node.js + Express single-page web application.
-
-Users can:
-- Log in
-- Create, update and delete locations
-- View locations in a list
-- Display locations on an interactive map (OpenStreetMap + Leaflet)
-
-The application uses MongoDB for data persistence.
+The application distinguishes between user roles and provides full CRUD functionality for location management.
 
 ---
 
-## Technologies Used
+## -Features
 
-- Node.js
-- Express.js
-- MongoDB
-- Vanilla JavaScript (Frontend SPA)
-- OpenStreetMap (Map data)
-- Leaflet (Interactive map library)
+* Authentication with role-based access (Admin / User)
+* Interactive map integration (Leaflet + OpenStreetMap)
+* Location management (Create, Read, Update, Delete)
+* Image upload and display for locations
+* Dynamic list synchronized with map markers
+* Marker highlighting & detail view
+* Responsive and dynamic frontend (SPA)
 
 ---
 
-## Installation & Run
+## -Tech Stack
 
-1. Clone the repository:
+**Frontend**
 
-```bash
-git clone https://gitlab.rz.htw-berlin.de/Ahmed.Al-Odaini/releafberlin_final.git
+* Vanilla JavaScript (SPA)
+* HTML5 / CSS3
+
+**Backend**
+
+* Node.js
+* Express.js (REST API)
+
+**Database**
+
+* MongoDB
+
+**Map & Geocoding**
+
+* OpenStreetMap
+* Leaflet
+* Nominatim (Geocoding)
+
+---
+
+## Architecture (Simplified)
+
+Client (SPA)
+⬇️
+REST API (Express)
+⬇️
+MongoDB Database
+
+* Frontend communicates via REST endpoints
+* Backend handles logic, validation & geocoding
+* Images are stored on the server (not in DB)
+
+---
+
+## 📸 Screenshots
+
+```md
+![Main Screen](screenshots/main.png)
+![Login Screen](screenshots/login.png)
+![Add Locatin Screen](screenshots/add.png)
+![Locatin details Screen](screenshots/details.png)
+```
+
+---
+
+## -API (Overview)
+
+Example endpoints:
+
+* `GET /locations` → Get all locations
+* `POST /locations` → Create new location
+* `PUT /locations/:id` → Update location
+* `DELETE /locations/:id` → Delete location
+
+---
+
+## -Author
+
+**Ahmed Al-Odaini**
+B.Sc. Applied Computer Science – HTW Berlin
+
+---
+
+## -Notes:
+
+* This project was developed for educational purposes
+* Focus: Full-stack development, REST APIs, and interactive UI
