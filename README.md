@@ -52,11 +52,7 @@ The application distinguishes between user roles and provides full CRUD function
 
 ## Architecture (Simplified)
 
-Client (SPA)
-⬇️
-REST API (Express)
-⬇️
-MongoDB Database
+Client (SPA) - REST API (Express) - MongoDB Database
 
 * Frontend communicates via REST endpoints
 * Backend handles logic, validation & geocoding
