@@ -6,27 +6,27 @@ This project was developed as part of the **Web Application Development (WAD)** 
 
 ---
 
-## -Overview
+## Overview
 
 ReLeafBerlin is a Single Page Application (SPA) that allows users to explore, manage, and visualize environmental locations on an interactive map.
 
-The application distinguishes between user roles and provides full CRUD functionality for location management.
+The application distinguishes between user roles in the user interface and provides full CRUD functionality for location management.
 
 ---
 
-## -Features
+## Features
 
-* Authentication with role-based access (Admin / User)
+* Login with role-based user interface (Admin / User)
 * Interactive map integration (Leaflet + OpenStreetMap)
 * Location management (Create, Read, Update, Delete)
 * Image upload and display for locations
 * Dynamic list synchronized with map markers
 * Marker highlighting & detail view
-* Responsive and dynamic frontend (SPA)
+* Address geocoding via server-side proxy (Nominatim)
 
 ---
 
-## -Tech Stack
+## Tech Stack
 
 **Frontend**
 
@@ -37,6 +37,7 @@ The application distinguishes between user roles and provides full CRUD function
 
 * Node.js
 * Express.js (REST API)
+* Multer (image upload)
 
 **Database**
 
@@ -52,49 +53,83 @@ The application distinguishes between user roles and provides full CRUD function
 
 ## Architecture (Simplified)
 
-Client (SPA) - REST API (Express) - MongoDB Database
+Client (SPA)
+⬇️
+REST API (Express)
+⬇️
+MongoDB Database
 
 * Frontend communicates via REST endpoints
-* Backend handles logic, validation & geocoding
-* Images are stored on the server (not in DB)
+* Backend handles data access, image upload & geocoding
+* Images are stored on the server (not in the DB), the DB only stores the image path
 
 ---
 
-## -Screenshots
+## Screenshots
 
-#### Main Screen
-![Main Screen](screenshots/main.png) 
+### Main Screen
+![Main Screen](screenshots/main.png)
 
-#### Login Screen
+### Login Screen
 ![Login Screen](screenshots/login.png)
 
-#### Add Location
-![Add Locatin Screen](screenshots/add.png)
+### Add Location Screen
+![Add Location Screen](screenshots/add.png)
 
-#### Details View
-![Locatin details Screen](screenshots/details.png)
-
----
-
-## -API (Overview)
-
-Example endpoints:
-
-* `GET /locations` → Get all locations
-* `POST /locations` → Create new location
-* `PUT /locations/:id` → Update location
-* `DELETE /locations/:id` → Delete location
+### Location Details Screen
+![Location Details Screen](screenshots/details.png)
 
 ---
 
-## -Author
+## API (Overview)
+
+| Method | Endpoint       | Description              |
+|--------|----------------|--------------------------|
+| POST   | `/users/login` | Log in a user            |
+| GET    | `/loc`         | Get all locations        |
+| GET    | `/loc/:id`     | Get one location         |
+| POST   | `/loc`         | Create new location      |
+| PUT    | `/loc/:id`     | Update location          |
+| DELETE | `/loc/:id`     | Delete location          |
+| GET    | `/geocode`     | Get coordinates for an address (`street`, `zipCity`) |
+
+---
+
+## Installation & Run
+
+1. Clone the repository:
+
+```bash
+git clone https://github.com/ahm-ud/ReleafBerlin.git
+cd ReleafBerlin
+```
+
+2. Install dependencies:
+
+```bash
+npm install
+```
+
+3. Start the server:
+
+```bash
+npm start
+```
+
+4. Open in browser: http://localhost:8000
+
+> Note: The MongoDB server is hosted at HTW Berlin. Access from outside the university network may require the HTW VPN.
+
+---
+
+## Author
 
 **Ahmed Al-Odaini**
-Applied Computer Science – HTW Berlin
+B.Sc. Applied Computer Science – HTW Berlin
 
 ---
 
-## -Notes:
+## Notes
 
 * This project was developed for educational purposes
 * Focus: Full-stack development, REST APIs, and interactive UI
